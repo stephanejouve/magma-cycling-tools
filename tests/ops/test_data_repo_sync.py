@@ -127,6 +127,24 @@ class TestSyncDataRepo:
         with patch("builtins.__import__", side_effect=block_talk_import):
             data_repo_sync._alert_talk("fetch", "boom", "/repo")
 
+    def test_alert_talk_calls_send_message_when_outillages_installed(self):
+        """Happy path : avec outillages installé, _alert_talk fire effectivement
+        un send_message vers la room infra-alerts. Test ajouté en complément
+        du test ImportError pour fermer le gap qui a laissé passer le bug
+        13 jours en prod (msg admin id=2203 sur 1:1 admin-leader, ADR v5
+        prérequis Étape 1)."""
+        with patch("outillages.nextcloud_talk.send_message") as mock_send:
+            data_repo_sync._alert_talk("rebase", "CONFLICT in foo.txt", "/data/training-logs")
+
+        mock_send.assert_called_once()
+        args, kwargs = mock_send.call_args
+        message = args[0]
+        room = args[1] if len(args) > 1 else kwargs.get("room_token")
+        assert "data-repo-sync rebase failed" in message
+        assert "CONFLICT in foo.txt" in message
+        assert "/data/training-logs" in message
+        assert room == data_repo_sync.ALERT_ROOM == "infra-alerts"
+
     @patch("magma_cycling_tools.ops.data_repo_sync.ensure_safe_directory")
     @patch("magma_cycling_tools.ops.data_repo_sync.run_git")
     def test_dry_run_does_not_touch_git_write_ops(self, mock_run_git, _mock_safe):

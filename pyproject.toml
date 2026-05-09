@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "magma-cycling-tools"
-version = "0.1.0"
+version = "0.2.0"
 description = "Ops tooling et adapters pour magma-cycling (data_repo_sync, scrapers Zwift, migrations)"
 authors = ["Stephane Jouve"]
 license = "MIT"
@@ -9,6 +9,16 @@ packages = [{include = "magma_cycling_tools"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+# Dépendance runtime pour `_alert_talk()` dans `ops/data_repo_sync.py`
+# (import `outillages.nextcloud_talk.send_message`). Sans cette dep, le
+# code attrapait silencieusement ImportError et les alertes infra-alerts
+# ne fire-aient jamais en cas de pull-rebase fail / push rejected — bug
+# invisible ~13 jours côté container `magma-cycling-cron-jobs-1` stack #33
+# (cf. msg admin id=2203 sur 1:1 admin-leader, ADR v5 prérequis Étape 1).
+#
+# Repo privé : le container build doit avoir une clé SSH avec read access
+# au repo stephanejouve/outillages pour que poetry install résolve.
+outillages = {git = "ssh://git@github.com/stephanejouve/outillages.git", tag = "v0.11.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.0"
