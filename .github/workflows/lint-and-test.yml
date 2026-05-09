@@ -52,6 +52,12 @@ jobs:
       - name: Install dependencies
         env:
           GIT_SSH_COMMAND: "ssh -i ${{ steps.deploy_key.outputs.key_path }} -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes"
+          # Force Poetry à utiliser le client `git` système (qui respecte
+          # GIT_SSH_COMMAND) plutôt que dulwich (lib Python bundled, qui
+          # ignore GIT_SSH_COMMAND et fail avec HangupException sur deps
+          # SSH privées). Cf. python-poetry.org/docs/configuration/
+          # #experimental-system-git-client
+          POETRY_EXPERIMENTAL_SYSTEM_GIT_CLIENT: "true"
         run: poetry install --no-interaction
 
       # Cleanup defensive (admin advice msg id=2216 point 4) — GHA runner
