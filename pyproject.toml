@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "magma-cycling-tools"
-version = "0.2.0"
+version = "0.3.0"
 description = "Ops tooling et adapters pour magma-cycling (data_repo_sync, scrapers Zwift, migrations)"
 authors = ["Stephane Jouve"]
 license = "MIT"
