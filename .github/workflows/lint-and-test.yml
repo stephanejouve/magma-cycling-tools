@@ -29,8 +29,40 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      # Deploy key SSH read-only pour cloner outillages (repo privé), dep
+      # déclarée dans pyproject.toml. Pattern Option 2 validé Admin 2026-05-09
+      # (msg id=2212 Equipe Magma + msg id=2216 garde-fou sécu). Le secret
+      # OUTILLAGES_DEPLOY_KEY est provisionné côté repo Settings → Secrets.
+      # mktemp -d (700) + umask 077 → la key est en mode 600 dès création
+      # (évite race window avec /tmp world-readable).
+      - name: Setup outillages SSH deploy key
+        id: deploy_key
+        env:
+          OUTILLAGES_DEPLOY_KEY: ${{ secrets.OUTILLAGES_DEPLOY_KEY }}
+        run: |
+          KEY_DIR="$(mktemp -d)"
+          KEY_PATH="$KEY_DIR/outillages-deploy-key"
+          umask 077
+          printf '%s\n' "$OUTILLAGES_DEPLOY_KEY" > "$KEY_PATH"
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          echo "key_path=$KEY_PATH" >> "$GITHUB_OUTPUT"
+          echo "key_dir=$KEY_DIR" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
+        env:
+          GIT_SSH_COMMAND: "ssh -i ${{ steps.deploy_key.outputs.key_path }} -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes"
         run: poetry install --no-interaction
+
+      # Cleanup defensive (admin advice msg id=2216 point 4) — GHA runner
+      # éphémère mais shred explicite limite la fenêtre de leak.
+      - name: Cleanup outillages deploy key
+        if: always()
+        run: |
+          if [ -n "${{ steps.deploy_key.outputs.key_path }}" ]; then
+            shred -u "${{ steps.deploy_key.outputs.key_path }}" 2>/dev/null || true
+            rm -rf "${{ steps.deploy_key.outputs.key_dir }}" 2>/dev/null || true
+          fi
 
       - name: Run pre-commit hooks
         run: poetry run pre-commit run --all-files
