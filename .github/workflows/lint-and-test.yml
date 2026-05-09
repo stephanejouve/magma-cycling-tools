@@ -30,20 +30,38 @@ jobs:
           virtualenvs-in-project: true
 
       # Deploy key SSH read-only pour cloner outillages (repo privé), dep
-      # déclarée dans pyproject.toml. Pattern Option 2 validé Admin 2026-05-09
-      # (msg id=2212 Equipe Magma + msg id=2216 garde-fou sécu). Le secret
-      # OUTILLAGES_DEPLOY_KEY est provisionné côté repo Settings → Secrets.
-      # mktemp -d (700) + umask 077 → la key est en mode 600 dès création
-      # (évite race window avec /tmp world-readable).
+      # déclarée dans pyproject.toml.
+      #
+      # Pattern base64 (workaround multilignes GHA secret) : après les
+      # 2 fails consécutifs côté magma-cycling docker-publish runs v3.34.0
+      # + v3.34.1 avec `Load key: error in libcrypto`, le constat est que
+      # GHA expose mal une privkey OpenSSH multilignes via
+      # `${{ secrets.X }}` — un étage de la chaîne storage→runtime introduit
+      # du mangling, même avec env: + printf '%s\n' + tr -d '\r'. Workaround
+      # robuste : Admin re-poste la privkey en base64 single-line sous un
+      # nouveau secret `OUTILLAGES_DEPLOY_KEY_B64`, et le workflow décode
+      # au moment d'écrire. Cf. msg admin id≈2243 (déploiement nocturne
+      # 2026-05-09) + magma-cycling PR #335 (fix analogue).
+      #
+      # Note : ce workflow `lint-and-test.yml` était jusqu'à v0.3.0 sur
+      # l'ancien secret `OUTILLAGES_DEPLOY_KEY` (multilignes). Tant que
+      # personne ne push de PR sur magma-cycling-tools, le workflow ne
+      # tournait pas → bug latent. Mais la pubkey associée à l'ancien
+      # secret a été révoquée par Admin (id 150997744 deleted), donc dès
+      # le prochain push CI échouait au `poetry install`. Cette PR
+      # bascule proactivement sur le nouveau secret base64.
+      #
+      # Garde-fou sécu : mktemp -d 700 + install -m 600 (atomic, pas de
+      # race window vs chmod après).
       - name: Setup outillages SSH deploy key
         id: deploy_key
         env:
-          OUTILLAGES_DEPLOY_KEY: ${{ secrets.OUTILLAGES_DEPLOY_KEY }}
+          OUTILLAGES_DEPLOY_KEY_B64: ${{ secrets.OUTILLAGES_DEPLOY_KEY_B64 }}
         run: |
           KEY_DIR="$(mktemp -d)"
           KEY_PATH="$KEY_DIR/outillages-deploy-key"
-          umask 077
-          printf '%s\n' "$OUTILLAGES_DEPLOY_KEY" > "$KEY_PATH"
+          install -m 600 /dev/null "$KEY_PATH"
+          printf '%s' "$OUTILLAGES_DEPLOY_KEY_B64" | base64 -d > "$KEY_PATH"
           mkdir -p ~/.ssh
           ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
           echo "key_path=$KEY_PATH" >> "$GITHUB_OUTPUT"
