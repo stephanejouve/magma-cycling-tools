@@ -55,8 +55,12 @@ jobs:
           # Force Poetry à utiliser le client `git` système (qui respecte
           # GIT_SSH_COMMAND) plutôt que dulwich (lib Python bundled, qui
           # ignore GIT_SSH_COMMAND et fail avec HangupException sur deps
-          # SSH privées). Cf. python-poetry.org/docs/configuration/
-          # #experimental-system-git-client
+          # SSH privées). En Poetry 2.x la var est `POETRY_SYSTEM_GIT_CLIENT`
+          # (sans `EXPERIMENTAL_`, renommé depuis 1.2). Cf. python-poetry.org
+          # /docs/configuration/#system-git-client.
+          POETRY_SYSTEM_GIT_CLIENT: "true"
+          # Fallback pour Poetry 1.x si jamais le runner downgrade (le nom
+          # legacy est encore reconnu par Poetry 2.x → safe à laisser).
           POETRY_EXPERIMENTAL_SYSTEM_GIT_CLIENT: "true"
         run: poetry install --no-interaction
 
