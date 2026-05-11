@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -89,9 +89,7 @@ class TestEquidistance:
 
 
 class TestFullFlowIntegration:
-    def test_full_flow_circuit_to_route_weather(
-        self, mf_forecast_chas: dict[str, Any]
-    ) -> None:
+    def test_full_flow_circuit_to_route_weather(self, mf_forecast_chas: dict[str, Any]) -> None:
         """Integration: sample_route → mocked provider → consistent timestamps."""
         # Build a 2-point circuit (~5 km)
         points = [(45.69, 3.34, 300.0), (45.73, 3.34, 320.0)]
@@ -105,7 +103,7 @@ class TestFullFlowIntegration:
         client.get_forecast.return_value = forecast_obj
         provider = MeteofranceCommunityProvider(client=client)
 
-        start = datetime(2026, 5, 11, 8, 0, tzinfo=timezone.utc)
+        start = datetime(2026, 5, 11, 8, 0, tzinfo=UTC)
         forecasts = []
         for s in samples:
             from datetime import timedelta

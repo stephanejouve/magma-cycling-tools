@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+
 import pytest
 
 from magma_cycling_tools.weather.factory import (
@@ -51,11 +53,11 @@ class TestProviderResolution:
 
 class TestStubBehavior:
     def test_official_stub_get_forecast_raises(self) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         provider = MeteofranceOfficialProvider()
         with pytest.raises(NotImplementedError):
-            provider.get_forecast_point(0, 0, datetime.now(tz=timezone.utc))
+            provider.get_forecast_point(0, 0, datetime.now(tz=UTC))
 
     def test_official_stub_get_rain_raises(self) -> None:
         provider = MeteofranceOfficialProvider()

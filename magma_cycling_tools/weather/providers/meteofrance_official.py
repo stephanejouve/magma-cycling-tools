@@ -24,9 +24,7 @@ class MeteofranceOfficialProvider(WeatherProvider):
     def provider_name(self) -> str:
         return "meteofrance_official"
 
-    def get_forecast_point(
-        self, lat: float, lon: float, when: datetime
-    ) -> ForecastPoint:
+    def get_forecast_point(self, lat: float, lon: float, when: datetime) -> ForecastPoint:
         raise NotImplementedError(
             "Official Météo-France provider not implemented in PoC. "
             "Use MAGMA_WEATHER_PROVIDER=meteofrance_community."

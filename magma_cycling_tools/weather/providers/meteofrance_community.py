@@ -7,7 +7,7 @@ flagged inline with ``# WORKAROUND lib bug: <issue>`` and escalated.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from meteofrance_api import MeteoFranceClient
@@ -58,7 +58,7 @@ _RAIN_CODE_TO_INTENSITY: dict[int, RainIntensity] = {
 
 def _epoch_to_aware(ts: int | float) -> datetime:
     """Convert an epoch integer to a UTC-aware datetime."""
-    return datetime.fromtimestamp(int(ts), tz=timezone.utc)
+    return datetime.fromtimestamp(int(ts), tz=UTC)
 
 
 def _coerce_float(value: Any, default: float = 0.0) -> float:
@@ -81,9 +81,7 @@ class MeteofranceCommunityProvider(WeatherProvider):
     def provider_name(self) -> str:
         return "meteofrance_community"
 
-    def get_forecast_point(
-        self, lat: float, lon: float, when: datetime
-    ) -> ForecastPoint:
+    def get_forecast_point(self, lat: float, lon: float, when: datetime) -> ForecastPoint:
         if when.tzinfo is None:
             raise ValueError("`when` must be timezone-aware")
         forecast = self._client.get_forecast(latitude=lat, longitude=lon)
@@ -104,11 +102,7 @@ class MeteofranceCommunityProvider(WeatherProvider):
         rain = self._client.get_rain(latitude=lat, longitude=lon)
         raw_slots: list[dict[str, Any]] = list(getattr(rain, "forecast", []) or [])
         update_epoch = int(getattr(rain, "updated_on", 0) or 0)
-        update_time = (
-            _epoch_to_aware(update_epoch)
-            if update_epoch
-            else datetime.now(tz=timezone.utc)
-        )
+        update_time = _epoch_to_aware(update_epoch) if update_epoch else datetime.now(tz=UTC)
         if not raw_slots:
             return RainForecast(
                 lat=lat,
@@ -125,24 +119,16 @@ class MeteofranceCommunityProvider(WeatherProvider):
             slots.append(
                 RainSlot(
                     minutes_from_now=minutes,
-                    intensity=_RAIN_CODE_TO_INTENSITY.get(
-                        code, RainIntensity.INCONNU
-                    ),
+                    intensity=_RAIN_CODE_TO_INTENSITY.get(code, RainIntensity.INCONNU),
                     intensity_code=code,
                 )
             )
         return RainForecast(lat=lat, lon=lon, slots=slots, update_time=update_time)
 
     def get_vigilance(self, departement: str) -> VigilanceBulletin:
-        phenomenons = self._client.get_warning_current_phenomenons(
-            domain=departement
-        )
+        phenomenons = self._client.get_warning_current_phenomenons(domain=departement)
         update_epoch = int(getattr(phenomenons, "update_time", 0) or 0)
-        fetched_at = (
-            _epoch_to_aware(update_epoch)
-            if update_epoch
-            else datetime.now(tz=timezone.utc)
-        )
+        fetched_at = _epoch_to_aware(update_epoch) if update_epoch else datetime.now(tz=UTC)
         raw_colors = getattr(phenomenons, "phenomenons_max_colors", []) or []
         items: list[VigilancePhenomenon] = []
         max_color = VigilanceColor.VERT
@@ -150,7 +136,9 @@ class MeteofranceCommunityProvider(WeatherProvider):
             phenom_id = str(item.get("phenomenon_id", "0"))
             color_id = int(item.get("phenomenon_max_color_id", 0) or 0)
             label_fr = ALERT_TYPE_DICTIONARY_FR.get(phenom_id)
-            color_fr = ALERT_COLOR_LIST_FR[color_id] if 0 < color_id < len(ALERT_COLOR_LIST_FR) else None
+            color_fr = (
+                ALERT_COLOR_LIST_FR[color_id] if 0 < color_id < len(ALERT_COLOR_LIST_FR) else None
+            )
             if label_fr is None or color_fr is None:
                 continue
             phenom_type = _PHENOMENON_FR_TO_TYPE.get(label_fr)
@@ -192,7 +180,9 @@ def _forecast_entry_to_point(entry: dict[str, Any]) -> ForecastPoint:
     weather = entry.get("weather") or {}
     return ForecastPoint(
         temperature_c=_coerce_float(temperature.get("value")),
-        feels_like_c=_coerce_float(temperature.get("windchill"), default=_coerce_float(temperature.get("value"))),
+        feels_like_c=_coerce_float(
+            temperature.get("windchill"), default=_coerce_float(temperature.get("value"))
+        ),
         humidity_pct=_coerce_float(entry.get("humidity")),
         wind_speed_kmh=_coerce_float(wind.get("speed")) * 3.6,
         wind_gust_kmh=_coerce_float(wind.get("gust")) * 3.6,

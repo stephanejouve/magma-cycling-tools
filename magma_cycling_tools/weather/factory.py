@@ -36,7 +36,6 @@ def get_weather_provider(name: str | None = None) -> WeatherProvider:
     resolved = (name or os.getenv(PROVIDER_ENV_VAR) or DEFAULT_PROVIDER).strip()
     if resolved not in _REGISTRY:
         raise UnknownProviderError(
-            f"Unknown weather provider {resolved!r}. "
-            f"Registered: {sorted(_REGISTRY)}"
+            f"Unknown weather provider {resolved!r}. " f"Registered: {sorted(_REGISTRY)}"
         )
     return _REGISTRY[resolved]()

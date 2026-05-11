@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -31,7 +31,7 @@ class TestGetForecastPoint:
 
         provider = _make_provider(client)
         # target = 1778508000 → second entry (exact match)
-        when = datetime.fromtimestamp(1778508000, tz=timezone.utc)
+        when = datetime.fromtimestamp(1778508000, tz=UTC)
         fp = provider.get_forecast_point(45.69, 3.34, when)
 
         assert fp.temperature_c == 18.1
@@ -54,7 +54,7 @@ class TestGetForecastPoint:
         client.get_forecast.return_value = forecast_obj
         provider = _make_provider(client)
         with pytest.raises(RuntimeError, match="no hourly forecast"):
-            provider.get_forecast_point(0, 0, datetime.now(tz=timezone.utc))
+            provider.get_forecast_point(0, 0, datetime.now(tz=UTC))
 
     def test_missing_subdicts_default_safely(self) -> None:
         client = MagicMock()
@@ -62,7 +62,7 @@ class TestGetForecastPoint:
         forecast_obj.forecast = [{"dt": 1778508000}]
         client.get_forecast.return_value = forecast_obj
         provider = _make_provider(client)
-        fp = provider.get_forecast_point(0, 0, datetime.fromtimestamp(1778508000, tz=timezone.utc))
+        fp = provider.get_forecast_point(0, 0, datetime.fromtimestamp(1778508000, tz=UTC))
         assert fp.temperature_c == 0.0
         assert fp.weather_description_fr == ""
         assert fp.wind_direction_deg == 0

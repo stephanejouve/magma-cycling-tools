@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -36,7 +36,7 @@ def _make_forecast(valid_at: datetime | None = None) -> ForecastPoint:
         precipitation_probability_pct=20,
         cloud_cover_pct=50,
         weather_description_fr="Eclaircies",
-        valid_at=valid_at or datetime.now(tz=timezone.utc),
+        valid_at=valid_at or datetime.now(tz=UTC),
     )
 
 
@@ -46,14 +46,12 @@ class TestTimezoneAwareness:
             _make_forecast(valid_at=datetime(2026, 5, 11, 14, 0))
 
     def test_forecast_aware_datetime_accepted(self) -> None:
-        fp = _make_forecast(valid_at=datetime(2026, 5, 11, 14, 0, tzinfo=timezone.utc))
+        fp = _make_forecast(valid_at=datetime(2026, 5, 11, 14, 0, tzinfo=UTC))
         assert fp.valid_at.tzinfo is not None
 
     def test_rain_forecast_naive_update_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            RainForecast(
-                lat=45.0, lon=3.0, slots=[], update_time=datetime(2026, 5, 11)
-            )
+            RainForecast(lat=45.0, lon=3.0, slots=[], update_time=datetime(2026, 5, 11))
 
     def test_vigilance_naive_fetched_at_rejected(self) -> None:
         with pytest.raises(ValidationError):
@@ -112,7 +110,7 @@ class TestValidationConstraints:
                 precipitation_probability_pct=0,
                 cloud_cover_pct=0,
                 weather_description_fr="",
-                valid_at=datetime.now(tz=timezone.utc),
+                valid_at=datetime.now(tz=UTC),
             )
 
     def test_wind_direction_360_rejected(self) -> None:
@@ -129,7 +127,7 @@ class TestValidationConstraints:
                 precipitation_probability_pct=0,
                 cloud_cover_pct=0,
                 weather_description_fr="",
-                valid_at=datetime.now(tz=timezone.utc),
+                valid_at=datetime.now(tz=UTC),
             )
 
     def test_rain_slot_minutes_out_of_range_rejected(self) -> None:
@@ -154,7 +152,7 @@ class TestRouteWeather:
         )
         rw = RouteWeather(
             circuit_id="circuit-test",
-            start_time=datetime(2026, 5, 11, 8, 0, tzinfo=timezone.utc),
+            start_time=datetime(2026, 5, 11, 8, 0, tzinfo=UTC),
             estimated_duration_min=120,
             segments=[seg],
             summary=RouteWeatherSummary(

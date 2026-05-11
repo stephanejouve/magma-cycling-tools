@@ -25,9 +25,7 @@ class WeatherProvider(ABC):
         """Short identifier, e.g. ``meteofrance_community``."""
 
     @abstractmethod
-    def get_forecast_point(
-        self, lat: float, lon: float, when: datetime
-    ) -> ForecastPoint:
+    def get_forecast_point(self, lat: float, lon: float, when: datetime) -> ForecastPoint:
         """Hourly forecast closest to ``when`` for the given (lat, lon)."""
 
     @abstractmethod
