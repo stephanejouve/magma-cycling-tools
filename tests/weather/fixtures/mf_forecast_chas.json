@@ -1,0 +1,36 @@
+{
+  "position": {"lat": 45.69, "lon": 3.34, "name": "Chas", "country": "FR"},
+  "updated_on": 1778500800,
+  "forecast": [
+    {
+      "dt": 1778504400,
+      "T": {"value": 17.4, "windchill": 16.8},
+      "humidity": 62,
+      "wind": {"speed": 4.2, "gust": 7.1, "direction": 240},
+      "rain": {"1h": 0.0},
+      "precipitation_probability": 10,
+      "clouds": 35,
+      "weather": {"icon": "p2j", "desc": "Eclaircies"}
+    },
+    {
+      "dt": 1778508000,
+      "T": {"value": 18.1, "windchill": 17.5},
+      "humidity": 58,
+      "wind": {"speed": 5.0, "gust": 8.4, "direction": 250},
+      "rain": {"1h": 0.0},
+      "precipitation_probability": 20,
+      "clouds": 50,
+      "weather": {"icon": "p3j", "desc": "Ciel voile"}
+    },
+    {
+      "dt": 1778511600,
+      "T": {"value": 17.9, "windchill": 17.3},
+      "humidity": 65,
+      "wind": {"speed": 5.6, "gust": 9.7, "direction": 260},
+      "rain": {"1h": 0.4},
+      "precipitation_probability": 40,
+      "clouds": 80,
+      "weather": {"icon": "p4j", "desc": "Couvert"}
+    }
+  ]
+}
