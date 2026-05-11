@@ -1,0 +1,19 @@
+{
+  "position": {"lat": 45.69, "lon": 3.34},
+  "updated_on": 1778500800,
+  "quality": 0,
+  "forecast": [
+    {"dt": 1778500800, "rain": 1, "desc": "Temps sec"},
+    {"dt": 1778501100, "rain": 1, "desc": "Temps sec"},
+    {"dt": 1778501400, "rain": 2, "desc": "Pluie faible"},
+    {"dt": 1778501700, "rain": 2, "desc": "Pluie faible"},
+    {"dt": 1778502000, "rain": 3, "desc": "Pluie moderee"},
+    {"dt": 1778502300, "rain": 3, "desc": "Pluie moderee"},
+    {"dt": 1778502600, "rain": 2, "desc": "Pluie faible"},
+    {"dt": 1778502900, "rain": 2, "desc": "Pluie faible"},
+    {"dt": 1778503200, "rain": 1, "desc": "Temps sec"},
+    {"dt": 1778503500, "rain": 1, "desc": "Temps sec"},
+    {"dt": 1778503800, "rain": 1, "desc": "Temps sec"},
+    {"dt": 1778504100, "rain": 1, "desc": "Temps sec"}
+  ]
+}
