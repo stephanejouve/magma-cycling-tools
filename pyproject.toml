@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "magma-cycling-tools"
-version = "0.2.0"
+version = "0.3.0"
 description = "Ops tooling et adapters pour magma-cycling (data_repo_sync, scrapers Zwift, migrations)"
 authors = ["Stephane Jouve"]
 license = "MIT"
@@ -18,7 +18,7 @@ python = "^3.11"
 #
 # Repo privé : le container build doit avoir une clé SSH avec read access
 # au repo stephanejouve/outillages pour que poetry install résolve.
-outillages = {git = "ssh://git@github.com/stephanejouve/outillages.git", tag = "v0.11.0"}
+outillages = {git = "ssh://git@github.com/stephanejouve/outillages.git", tag = "v0.50.0"}
 meteofrance-api = ">=1.3.0"
 pydantic = ">=2.0"
 
